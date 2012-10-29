@@ -1,7 +1,7 @@
 
 <?php
   
-  function condestructors_check($method_name, $check)
+  function condestructors_check($method_name, $check, $is_header)
   {
     // handle methods name which includes "init" but not constructor
     $tmp_check = $check;
@@ -10,13 +10,19 @@
     $found_constructors_line = strstr($tmp_check, "init()");
     if ($found_constructors_line !== FALSE)
     {
-      $check = $method_name."()";
+      if (!$is_header)
+        $check = $method_name."::".$method_name."()";
+      else
+        $check = $method_name."()";
     }
     
     $found_destructors_line = strstr($tmp_check, "dealloc()");
     if ($found_destructors_line !== FALSE)
     {
-      $check = "~".$method_name."()";
+      if (!$is_header)
+        $check = $method_name."::~".$method_name."()";
+      else
+        $check = "~".$method_name."()";
     }
     
     return $check;
@@ -24,18 +30,22 @@
   
   function have_param_check($check)
   {
+    // remove all "()" in obj-c method
+    $check = str_replace("(", "", $check);
+    $check = str_replace(")", " ", $check);
+    
     //handle constructors & destructors
     $found_param_line = strstr($check, ":");
     if ($found_param_line !== FALSE)
     {
-      $check = str_replace(":", "(", $check).")";
+      $check = substr_replace($check, "(", strpos($check, ":") - strlen($check), strpos($check, ":") - strlen($check) + 1).")";
     } else
       $check = $check."()";
     
     return $check;
   }
   
-  function replace_method_keyword($search, $replace, $subject, $method_name)
+  function replace_method_keyword($search, $replace, $subject, $method_name, $is_header)
   {
     $found_method_line = strstr($subject, $search);
     if ($found_method_line !== FALSE)
@@ -46,9 +56,12 @@
       
       $found_method_line = have_param_check($found_method_line);
       
-      $found_method_line = substr_replace($found_method_line, " ".$method_name."::", strpos($found_method_line, " ") - strlen($found_method_line), strpos($found_method_line, " ") - strlen($found_method_line) + 1);
+      if (!is_header)
+      {
+        $found_method_line = substr_replace($found_method_line, " ".$method_name."::", strpos($found_method_line, " ") - strlen($found_method_line), strpos($found_method_line, " ") - strlen($found_method_line) + 1);
+      }
       
-      $found_method_line = condestructors_check($method_name, $found_method_line);
+      $found_method_line = condestructors_check($method_name, $found_method_line, $is_header);
       
     }
     
@@ -66,6 +79,8 @@
                      '[PIScene class]',
                      '[PIWorld _instance]',
                      '[CCDirector sharedDirector]',
+                     'UITouch',
+                     ' withEvent:UIEvent',
                      ' setTexture:',
                      'setTextureRect',
                      ' valueForKey:',
@@ -105,6 +120,8 @@
                   '(PISceneCurrent)',
                   'PIWorld::_instance()',
                   'CCDirector::sharedDirector()',
+                  'CCTouch',
+                  ', CCEvent',
                   '->setDisplayFrame(',
                   '此行无效',
                   '->objectForKey(',
@@ -185,13 +202,13 @@
       continue;
     }
     
-    $handle_result = replace_method_keyword("-(", "", $line, $method_name);
+    $handle_result = replace_method_keyword("-(", "", $line, $method_name, TRUE);
     if ($handle_result !== FALSE)
     {
       $methods_solved = $methods_solved."\n  ".$handle_result.";";
     }
     
-    $handle_result = replace_method_keyword("+(", "static ", $line, $method_name);
+    $handle_result = replace_method_keyword("+(", "static ", $line, $method_name, TRUE);
     if ($handle_result !== FALSE)
     {
       $methods_solved = $methods_solved."\n  ".$handle_result.";";
@@ -210,7 +227,7 @@
       continue;
     }
     
-    $handle_result = replace_method_keyword("-(", "", $line, $method_name);
+    $handle_result = replace_method_keyword("-(", "", $line, $method_name, FALSE);
     if ($handle_result !== FALSE)
     {
       $content_solved = $content_solved."\n".$handle_result;
@@ -218,7 +235,7 @@
       continue;
     }
     
-    $handle_result = replace_method_keyword("+(", "static ", $line, $method_name);
+    $handle_result = replace_method_keyword("+(", "static ", $line, $method_name, FALSE);
     if ($handle_result !== FALSE)
     {
       $content_solved = $content_solved."\n".$handle_result;
