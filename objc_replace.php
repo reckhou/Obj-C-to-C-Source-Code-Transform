@@ -10,7 +10,7 @@
     $found_constructors_line = strstr($tmp_check, "init()");
     if ($found_constructors_line !== FALSE)
     {
-      if (!$is_header)
+      if ($is_header === 'false')
         $check = $method_name."::".$method_name."()";
       else
         $check = $method_name."()";
@@ -19,7 +19,7 @@
     $found_destructors_line = strstr($tmp_check, "dealloc()");
     if ($found_destructors_line !== FALSE)
     {
-      if (!$is_header)
+      if ($is_header === 'false')
         $check = $method_name."::~".$method_name."()";
       else
         $check = "~".$method_name."()";
@@ -56,7 +56,7 @@
       
       $found_method_line = have_param_check($found_method_line);
       
-      if (!is_header)
+      if ($is_header === 'false')
       {
         $found_method_line = substr_replace($found_method_line, " ".$method_name."::", strpos($found_method_line, " ") - strlen($found_method_line), strpos($found_method_line, " ") - strlen($found_method_line) + 1);
       }
@@ -202,13 +202,13 @@
       continue;
     }
     
-    $handle_result = replace_method_keyword("-(", "", $line, $method_name, TRUE);
+    $handle_result = replace_method_keyword("-(", "", $line, $method_name, 'true');
     if ($handle_result !== FALSE)
     {
       $methods_solved = $methods_solved."\n  ".$handle_result.";";
     }
     
-    $handle_result = replace_method_keyword("+(", "static ", $line, $method_name, TRUE);
+    $handle_result = replace_method_keyword("+(", "static ", $line, $method_name, 'true');
     if ($handle_result !== FALSE)
     {
       $methods_solved = $methods_solved."\n  ".$handle_result.";";
@@ -227,7 +227,7 @@
       continue;
     }
     
-    $handle_result = replace_method_keyword("-(", "", $line, $method_name, FALSE);
+    $handle_result = replace_method_keyword("-(", "", $line, $method_name, 'false');
     if ($handle_result !== FALSE)
     {
       $content_solved = $content_solved."\n".$handle_result;
@@ -235,7 +235,7 @@
       continue;
     }
     
-    $handle_result = replace_method_keyword("+(", "static ", $line, $method_name, FALSE);
+    $handle_result = replace_method_keyword("+(", "static ", $line, $method_name, 'false');
     if ($handle_result !== FALSE)
     {
       $content_solved = $content_solved."\n".$handle_result;
