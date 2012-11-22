@@ -79,6 +79,8 @@
                      '[PIScene class]',
                      '[PIWorld _instance]',
                      '[CCDirector sharedDirector]',
+                     'CCString *',
+                     'CCString stringWithFormat:',
                      'UITouch',
                      ' withEvent:UIEvent',
                      ' setTexture:',
@@ -120,6 +122,8 @@
                   '(PISceneCurrent)',
                   'PIWorld::_instance()',
                   'CCDirector::sharedDirector()',
+                  'string ',
+                  'PIRegex::PIStringFormat(',
                   'CCTouch',
                   ', CCEvent',
                   '->setDisplayFrame(',
@@ -235,7 +239,7 @@
       continue;
     }
     
-    $handle_result = replace_method_keyword("+(", "static ", $line, $method_name, 'false');
+    $handle_result = replace_method_keyword("+(", "", $line, $method_name, 'false'); // we don't need to add 'static' in implementation
     if ($handle_result !== FALSE)
     {
       $content_solved = $content_solved."\n".$handle_result;
