@@ -22,7 +22,7 @@
       if ($is_header === 'false')
         $check = $method_name."::~".$method_name."()";
       else
-        $check = "~".$method_name."()";
+        $check = "virtual ~".$method_name."()";
     }
     
     return $check;
